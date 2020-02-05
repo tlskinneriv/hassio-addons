@@ -32,5 +32,5 @@ Upload your Hass.io backups to Dropbox.
 [dropbox-sync-aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg?style=flat
 [dropbox-sync-amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg?style=flat
 [dropbox-sync-i386-shield]: https://img.shields.io/badge/i386-yes-green.svg?style=flat
-[dropbox-sync-pulls-shield]: https://img.shields.io/docker/pulls/dwelch2101/dropbox-sync-armhf.svg?style=flat
-[license-shield]: https://img.shields.io/github/license/danielwelch/hassio-addons.svg?style=flat
+[dropbox-sync-pulls-shield]: https://img.shields.io/docker/pulls/dancwilliams/dropbox-sync-armhf.svg?style=flat
+[license-shield]: https://img.shields.io/github/license/dancwilliams/hassio-addons.svg?style=flat
