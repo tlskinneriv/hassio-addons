@@ -37,7 +37,8 @@ RUN apk add --no-cache --virtual build-deps alpine-sdk cmake git libusb-dev && \
     make install && \
     apk del build-deps && \
     rm -r /tmp/src && \
-    apk add --no-cache libusb mosquitto-clients jq
+    apk add --no-cache libusb mosquitto-clients jq && \
+    touch /tmp/rtl_433.log
 
 #
 # Define an environment variable
@@ -48,4 +49,4 @@ ENV MQTT_USER="guest"
 ENV MQTT_PASS="guest"
 ENV MQTT_TOPIC="homeassistant/sensor/rtl433"
 
-CMD cd / # && cp /config/rtl4332mqtt/rtl2mqtt.sh /rtl2mqtt.sh && chmod +x /rtl2mqtt.sh && /rtl2mqtt.sh
+CMD cd / && /usr/local/bin/rtl_433 >> /tmp/rtl_433.log # && cp /config/rtl4332mqtt/rtl2mqtt.sh /rtl2mqtt.sh && chmod +x /rtl2mqtt.sh && /rtl2mqtt.sh
