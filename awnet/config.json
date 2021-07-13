@@ -1,0 +1,34 @@
+{
+  "name": "AWNET to MQTT",
+  "version": "0.114",
+  "slug": "awnet_to_mqtt",
+  "description": "Addon to capture local Ambient Weather data from ObserverIP",
+  "arch": [
+    "armhf",
+    "armv7",
+    "aarch64",
+    "amd64",
+    "i386"
+  ],
+  "startup": "application",
+  "boot": "auto",
+  "options": {
+    "mqtt_host": "core-mosquitto",
+    "mqtt_port": 1883,
+    "mqtt_user": "",
+    "mqtt_password": "",
+    "mqtt_topic_prefix": "weather",
+    "mqtt_topic": "WS-2902B"
+  },
+  "schema": {
+    "mqtt_host": "str",
+    "mqtt_port": "int",
+    "mqtt_user": "str",
+    "mqtt_password": "str",
+    "mqtt_topic_prefix": "str",
+    "mqtt_topic": "str"
+  },
+  "ports": {
+    "80/tcp": 7080
+  }
+}
