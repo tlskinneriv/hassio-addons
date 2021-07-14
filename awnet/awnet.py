@@ -11,88 +11,75 @@
 #https://www.emqx.io/blog/how-to-use-mqtt-in-python
 
 from urllib.parse import urlparse, parse_qs
-import paho.mqtt.client as mqtt
+import json
+import requests
 import time, os
 
 # set MQTT vars
-MQTT_BROKER_HOST    = os.getenv('MQTT_BROKER_HOST',"mqtt")
-print(MQTT_BROKER_HOST)
-MQTT_BROKER_PORT    = int(os.getenv('MQTT_BROKER_PORT',1883))
-MQTT_CLIENT_ID      = os.getenv('MQTT_CLIENT_ID',"ambient_weather_decode")
-MQTT_USERNAME       = os.getenv('MQTT_USERNAME',"")
-MQTT_PASSWORD       = os.getenv('MQTT_PASSWORD',"")
+ENTITY_ID   = os.getenv('ENTITY_ID',"station")
+PUBLISH_ALL = bool(os.getenv('PUBLISH_ALL',"false"))
+AUTH_TOKEN  = os.getenv('SUPERVISOR_TOKEN',"")
 
-# looking to get resultant topic like weather/ws-2902c/[item]
-MQTT_TOPIC_PREFIX   = os.getenv('MQTT_TOPIC_PREFIX',"weather")
-MQTT_TOPIC          = os.getenv('MQTT_TOPIC_PREFIX',"station")
-COMPILED_MQTT_TOPIC = MQTT_TOPIC_PREFIX + "/" + MQTT_TOPIC
 
-# mostly copied + pasted from https://www.emqx.io/blog/how-to-use-mqtt-in-python and some of my own MQTT scripts
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
-        print(f"connected to MQTT broker at {MQTT_BROKER_HOST}")
-    else: 
-        print("Failed to connect, return code %d\n", rc)
+def publish(entity, msg):
+    head = {
+        'Authorization': 'Bearer ' + AUTH_TOKEN,
+        "content-type": "application/json",
+    }
+    good_responses = [ 200, 201 ]
 
-def on_disconnect(client, userdata, flags, rc):
-    print("disconnected from MQTT broker")
+    url = 'http://supervisor/core/api/states/' + "sensor." + entity
 
-# set up mqtt client
-client = mqtt.Client(client_id=MQTT_CLIENT_ID)
-if MQTT_USERNAME and MQTT_PASSWORD:
-    client.username_pw_set(MQTT_USERNAME,MQTT_PASSWORD)
-    print("Username and password set.")
-client.will_set(MQTT_TOPIC_PREFIX+"/status", payload="Offline", qos=1, retain=True) # set LWT     
-client.on_connect = on_connect # on connect callback
-client.on_disconnect = on_disconnect # on disconnect callback
-
-# connect to broker
-client.connect(MQTT_BROKER_HOST, port=MQTT_BROKER_PORT)
-client.loop_start()
-
-def publish(client, topic, msg):
-    result = client.publish(topic, msg)
-    # result: [0, 1]
-    status = result[0]
-
-    # uncomment for debug. don't need all the success messages.
-    if status == 0:
+    response = requests.post(url, data=msg, headers=head)
+    
+    if response.status_code in good_responses:
         #print(f"Sent {msg} to topic {topic}")
         pass
     else:
-        print(f"Failed to send message to topic {topic}")
-
+        print(f"Failed to send {entity} update to topic HASS")
 
 def handle_results(result):
     """ result is a dict. full list of variables include:
     stationtype: ['AMBWeatherV4.2.9'], PASSKEY: ['<station_mac_address>'], dateutc: ['2021-03-20 17:12:27'], tempinf: ['71.1'], humidityin: ['36'], baromrelin: ['29.693'],    baromabsin: ['24.549'],    tempf: ['58.8'], battout: ['1'], humidity: ['32'], winddir: ['215'],windspeedmph: ['0.0'],    windgustmph: ['0.0'], maxdailygust: ['3.4'], hourlyrainin: ['0.000'],    eventrainin: ['0.000'],    dailyrainin: ['0.000'],
     weeklyrainin: ['0.000'], monthlyrainin: ['0.000'], totalrainin: ['0.000'],    solarradiation: ['121.36'],
     uv: ['1'],batt_co2: ['1'] """
-
-    # we're just going to publish everything. less coding.
+    
+    # This changes the reulting key values from lists to single values
     for key in result:
-        # skip first item, which is basically a URL and MQTT doesn't like it. probably resulting from my bad url parsing.
-        if 'http://' in key:
-            continue
+        if len(result[key]) == 1:
+            result[key] = result[key][0]
 
-        #print(f"{key}: {result[key]}")
-        # resultant topic is weather/ws-2902c/solarradiation
-        specific_topic = COMPILED_MQTT_TOPIC + f"/{key}"
+    # This adds the timezone offset to the date code for easier parsing in Home Assistant
+    result["dateutc"] = result["dateutc"] + "+00:00"
+    
+    output_dict = {}
 
-        # replace [' and '] with nothing. these come from the url parse
-        msg = str(result[key]).replace("""['""", '').replace("""']""", '')
-        #print(f"attempting to publish to {specific_topic} with message {msg}")
-        publish(client, specific_topic, msg)
+    state = "online"
+
+    output_dict["state"] = state
+
+    output_dict["attributes"] = result
+
+    json_result = json.dumps(output_dict)
+
+    publish(ENTITY_ID, json_result)
+
+    print(PUBLISH_ALL)
+
+    if PUBLISH_ALL == True:
+
+        for key in output_dict["attributes"]:
+
+            entity = ENTITY_ID + "_" + key
+            entity_json = json.dumps({ "state": output_dict["attributes"][key]})
+            publish(entity, entity_json)
 
 
 def application(environ, start_response):
-    # construct a full URL from the request. HTTP_HOST is FQDN, PATH_INFO is everything after
-    # the FQDN (i.e. /data/stationtype=AMBWeatherV4.2.9&&tempinf=71.1&humidityin=35)
-    url = "http://" + environ["HTTP_HOST"] + environ["PATH_INFO"]
+    # the FQDN (i.e. /data?stationtype=AMBWeatherV4.2.9&&tempinf=71.1&humidityin=35)
+    # adapted the code to reflect comment from original blog post.
 
-    # unsure why I need to parse twice. probably just need to do it once with variable url.
-    parsed = urlparse(url)
-    result = parse_qs(parsed.geturl())
+    result = parse_qs(environ['QUERY_STRING'])
 
     # send to our other function to deal with the results.
     # result is a dict 

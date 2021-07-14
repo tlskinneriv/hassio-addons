@@ -1,6 +1,6 @@
 {
   "name": "AWNET to MQTT",
-  "version": "0.114",
+  "version": "0.141",
   "slug": "awnet_to_mqtt",
   "description": "Addon to capture local Ambient Weather data from ObserverIP",
   "arch": [
@@ -12,21 +12,14 @@
   ],
   "startup": "application",
   "boot": "auto",
+  "homeassistant_api": true,
   "options": {
-    "mqtt_host": "core-mosquitto",
-    "mqtt_port": 1883,
-    "mqtt_user": "",
-    "mqtt_password": "",
-    "mqtt_topic_prefix": "weather",
-    "mqtt_topic": "WS-2902B"
+    "entity_id": "WS2902B",
+    "publish_all_sensors": false
   },
   "schema": {
-    "mqtt_host": "str",
-    "mqtt_port": "int",
-    "mqtt_user": "str",
-    "mqtt_password": "str",
-    "mqtt_topic_prefix": "str",
-    "mqtt_topic": "str"
+    "entity_id": "match(^[A-Za-z0-9]+)",
+    "publish_all_sensors": "bool"
   },
   "ports": {
     "80/tcp": 7080
