@@ -14,7 +14,7 @@ import time, os
 
 # set MQTT vars
 ENTITY_ID   = os.getenv('ENTITY_ID',"station")
-PUBLISH_ALL = bool(os.getenv('PUBLISH_ALL',"false"))
+# PUBLISH_ALL = bool(os.getenv('PUBLISH_ALL',"false"))
 AUTH_TOKEN  = os.getenv('SUPERVISOR_TOKEN',"")
 
 
@@ -61,13 +61,13 @@ def handle_results(result):
 
     publish(ENTITY_ID, json_result)
 
-    if PUBLISH_ALL == True:
+#    if PUBLISH_ALL == True:
 
-        for key in output_dict["attributes"]:
+#        for key in output_dict["attributes"]:
 
-            entity = ENTITY_ID + "_" + key
-            entity_json = json.dumps({ "state": output_dict["attributes"][key], "attributes": { "dateutc": output_dict["attributes"]["dateutc"] }})
-            publish(entity, entity_json)
+#            entity = ENTITY_ID + "_" + key
+#            entity_json = json.dumps({ "state": output_dict["attributes"][key], "attributes": { "dateutc": output_dict["attributes"]["dateutc"] }})
+#            publish(entity, entity_json)
 
 
 def application(environ, start_response):

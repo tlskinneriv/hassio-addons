@@ -14,12 +14,10 @@
   "boot": "auto",
   "homeassistant_api": true,
   "options": {
-    "entity_id": "WS2902B",
-    "publish_all_sensors": false
+    "entity_id": "WS2902B"
   },
   "schema": {
-    "entity_id": "match(^[A-Za-z0-9]+)",
-    "publish_all_sensors": "bool"
+    "entity_id": "match(^[A-Za-z0-9]+)"
   },
   "ports": {
     "80/tcp": 7080
