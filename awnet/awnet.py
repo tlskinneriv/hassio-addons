@@ -1,14 +1,11 @@
 #Adapted for use in HASS ADDON by Dan C Williams: dan.c.williams@gmail.com 20210713
 
+# https://austinsnerdythings.com/2021/03/20/handling-data-from-ambient-weather-ws-2902c-to-mqtt/?unapproved=64&moderation-hash=2c93b4c769f98120c9adae6be6ca2f18#comment-64
 # Python script to decode Ambient Weather data (from WS-2902C and similar)
 # and publish to MQTT.
 # original author: Austin of austinsnerdythings.com
 # publish date: 2021-03-20
 
-# some resources I used include
-#https://askubuntu.com/questions/29152/how-do-i-use-python-with-apache2
-#https://www.toptal.com/python/pythons-wsgi-server-application-interface
-#https://www.emqx.io/blog/how-to-use-mqtt-in-python
 
 from urllib.parse import urlparse, parse_qs
 import json
@@ -64,14 +61,12 @@ def handle_results(result):
 
     publish(ENTITY_ID, json_result)
 
-    print(PUBLISH_ALL)
-
     if PUBLISH_ALL == True:
 
         for key in output_dict["attributes"]:
 
             entity = ENTITY_ID + "_" + key
-            entity_json = json.dumps({ "state": output_dict["attributes"][key]})
+            entity_json = json.dumps({ "state": output_dict["attributes"][key], "attributes": { "dateutc": output_dict["attributes"]["dateutc"] }})
             publish(entity, entity_json)
 
 
