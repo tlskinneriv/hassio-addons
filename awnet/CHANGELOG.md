@@ -10,3 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.45] - 2021-07-15
 - Dressing up this so people can follow.  This is the initial "public" posting on my GitHub.
 - Will update Changelog with all work moving forward.
+
+## [0.1.46] - 2021-07-15
+- Added icon.png

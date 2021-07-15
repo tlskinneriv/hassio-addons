@@ -1,6 +1,6 @@
 {
   "name": "AWNET to HASS",
-  "version": "0.1.45",
+  "version": "0.1.46",
   "slug": "awnet_to_hass",
   "description": "Addon to capture local Ambient Weather data from ObserverIP",
   "arch": [
