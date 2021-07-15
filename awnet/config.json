@@ -1,7 +1,7 @@
 {
-  "name": "AWNET to MQTT",
-  "version": "0.144",
-  "slug": "awnet_to_mqtt",
+  "name": "AWNET to HASS",
+  "version": "0.1.45",
+  "slug": "awnet_to_hass",
   "description": "Addon to capture local Ambient Weather data from ObserverIP",
   "arch": [
     "armhf",
