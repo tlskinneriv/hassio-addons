@@ -47,9 +47,6 @@ def handle_results(result):
         if len(result[key]) == 1:
             result[key] = result[key][0]
 
-    # This adds the timezone offset to the date code for easier parsing in Home Assistant
-    result["dateutc"] = result["dateutc"] + "+00:00"
-
     output_dict = {}
 
     state = "online"
