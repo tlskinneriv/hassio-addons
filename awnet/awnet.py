@@ -19,7 +19,11 @@ ID_KEY = os.getenv("ID_KEY", "PASSKEY")
 def publish_mqtt(subtopic, id, payload):
     url_id = quote(id)
     topic = f"awnet/{subtopic}/{url_id}"
-    payload_json = json.dumps(payload)
+    service_data = {
+        'topic': topic,
+        'payload': payload
+    }
+    service_data_json = json.dumps(service_data)
 
     head = {
         "Authorization": "Bearer " + AUTH_TOKEN,
@@ -30,13 +34,13 @@ def publish_mqtt(subtopic, id, payload):
     url = "http://supervisor/core/api/mqtt/publish"
 
     print(url)
-    print(payload_json)
+    print(service_data_json)
     print(head)
 
-    response = requests.post(url, data=payload_json, headers=head)
+    response = requests.post(url, data=service_data_json, headers=head)
 
     if response.status_code in good_responses:
-        print(f"Sent {payload_json} to topic {topic}")
+        print(f"Sent {service_data_json} to topic {topic}")
         pass
     else:
         print(f"Failed to send {topic} update")
