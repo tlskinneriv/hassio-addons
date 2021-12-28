@@ -1,25 +1,25 @@
 {
-  "name": "AWNET to HASS",
-  "version": "0.1.47",
-  "slug": "awnet_to_hass",
-  "description": "Addon to capture local Ambient Weather data from ObserverIP",
-  "arch": [
-    "armhf",
-    "armv7",
-    "aarch64",
-    "amd64",
-    "i386"
-  ],
-  "startup": "application",
-  "boot": "auto",
-  "homeassistant_api": true,
-  "options": {
-    "entity_id": "WS2902B"
-  },
-  "schema": {
-    "entity_id": "match(^[A-Za-z0-9]+)"
-  },
-  "ports": {
-    "80/tcp": 7080
-  }
+    "name": "AWNET to HASS",
+    "version": "0.1.47",
+    "slug": "awnet_to_hass",
+    "description": "Addon to capture local Ambient Weather data from ObserverIP",
+    "arch": [
+        "armhf",
+        "armv7",
+        "aarch64",
+        "amd64",
+        "i386"
+    ],
+    "startup": "application",
+    "boot": "auto",
+    "homeassistant_api": true,
+    "options": {
+        "id_key": "PASSKEY"
+    },
+    "schema": {
+        "id_key": "match(^[A-Za-z0-9]+)"
+    },
+    "ports": {
+        "80/tcp": 7080
+    }
 }
