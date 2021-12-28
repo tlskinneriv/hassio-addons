@@ -31,7 +31,7 @@ def publish_mqtt(subtopic, id, payload):
     }
     good_responses = [200, 201]
 
-    url = "http://supervisor/core/api/mqtt/publish"
+    url = "http://supervisor/core/api/services/mqtt/publish"
 
     print(url)
     print(service_data_json)
