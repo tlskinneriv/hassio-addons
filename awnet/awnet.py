@@ -11,19 +11,15 @@ from urllib.parse import parse_qs, quote
 import json
 import requests
 import os
+import logging
 
-# set MQTT vars
+# set vars
 AUTH_TOKEN = os.getenv("SUPERVISOR_TOKEN", "test")
-ID_KEY = os.getenv("ID_KEY", "PASSKEY")
 
-def publish_mqtt(subtopic, id, payload):
-    url_id = quote(id)
-    topic = f"awnet/{subtopic}/{url_id}"
-    service_data = {
-        'topic': topic,
-        'payload': payload
-    }
-    service_data_json = json.dumps(service_data)
+_LOGGER = logging.getLogger(__name__)
+
+def publish(payload):
+    payload_json = json.dumps(payload)
 
     head = {
         "Authorization": "Bearer " + AUTH_TOKEN,
@@ -31,19 +27,14 @@ def publish_mqtt(subtopic, id, payload):
     }
     good_responses = [200, 201]
 
-    url = "http://supervisor/core/api/services/mqtt/publish"
+    url = "http://supervisor/core/api/services/awnet_local/update"
 
-    print(url)
-    print(service_data_json)
-    print(head)
-
-    response = requests.post(url, data=service_data_json, headers=head)
+    response = requests.post(url, data=payload_json, headers=head)
 
     if response.status_code in good_responses:
-        print(f"Sent {service_data_json} to topic {topic}")
-        pass
+        _LOGGER.info(f"Sent {payload_json}")
     else:
-        print(f"Failed to send {topic} update")
+        _LOGGER.error(f"Failed to send {payload_json} to {url} with headers {head}; {response.content}")
 
 
 def handle_results(result):
@@ -56,8 +47,8 @@ def handle_results(result):
         if len(result[key]) == 1:
             result[key] = result[key][0]
         else:
-            print('unexpected list size for key {}'.format(key))
-    publish_mqtt('station', result.get(ID_KEY, 'invalid_id'), result)
+            _LOGGER.error('Unexpected list size for key %s', key)
+    publish(result)
 
 
 def application(environ, start_response):
@@ -85,6 +76,6 @@ if __name__ == "__main__":
 
     # probably shouldn't run on port 80 but that's what I specified in the ambient weather console
     httpd = make_server("", 80, application)
-    print("Serving on http://localhost:80")
+    _LOGGER.info("Serving on http://localhost:80")
 
     httpd.serve_forever()

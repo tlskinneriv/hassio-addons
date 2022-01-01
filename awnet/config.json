@@ -13,12 +13,8 @@
     "startup": "application",
     "boot": "auto",
     "homeassistant_api": true,
-    "options": {
-        "id_key": "PASSKEY"
-    },
-    "schema": {
-        "id_key": "match(^[A-Za-z0-9]+)"
-    },
+    "options": {},
+    "schema": {},
     "ports": {
         "80/tcp": 7080
     }
