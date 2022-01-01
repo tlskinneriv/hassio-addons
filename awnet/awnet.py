@@ -1,11 +1,10 @@
-# Adapted for use in HASS ADDON by Dan C Williams: dan.c.williams@gmail.com 20210713
+# Adapted for use in Home Assistant by Dan C Williams, tlskinneriv
 
 # https://austinsnerdythings.com/2021/03/20/handling-data-from-ambient-weather-ws-2902c-to-mqtt/?unapproved=64&moderation-hash=2c93b4c769f98120c9adae6be6ca2f18#comment-64
 # Python script to decode Ambient Weather data (from WS-2902C and similar)
 # and publish to MQTT.
 # original author: Austin of austinsnerdythings.com
 # publish date: 2021-03-20
-
 
 from urllib.parse import parse_qs, quote
 import json
