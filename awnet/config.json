@@ -1,8 +1,8 @@
 {
     "name": "AWNET to HASS",
-    "version": "0.1.47",
+    "version": "0.1.0",
     "slug": "awnet_to_hass",
-    "description": "Addon to capture local Ambient Weather data from ObserverIP",
+    "description": "Addon to capture local Ambient Weather data in Home Assistant",
     "arch": [
         "armhf",
         "armv7",
