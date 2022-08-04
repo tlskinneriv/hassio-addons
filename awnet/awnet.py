@@ -7,15 +7,30 @@
 # publish date: 2021-03-20
 
 from urllib.parse import parse_qs, quote
+from wsgiref.headers import Headers
 import json
 import requests
 import os
 import logging
+import sys
 
 # set vars
 AUTH_TOKEN = os.getenv("SUPERVISOR_TOKEN", "test")
 
 _LOGGER = logging.getLogger(__name__)
+
+def get_headers(environ):
+    """
+    Handles getting the headers from the environment, Content-Type is the special one
+    """
+    headers = Headers([])
+    for header, value in environ.items():
+        if header.startswith("HTTP_"):
+            headers[header[5:].replace('_','-')] = value
+    if 'CONTENT_TYPE' in environ:
+        headers['CONTENT-TYPE'] = environ['CONTENT_TYPE']
+    return headers
+
 
 def publish(payload):
     payload_json = json.dumps(payload)
@@ -41,7 +56,7 @@ def handle_results(result):
     stationtype: ['AMBWeatherV4.2.9'], PASSKEY: ['<station_mac_address>'], dateutc: ['2021-03-20 17:12:27'], tempinf: ['71.1'], humidityin: ['36'], baromrelin: ['29.693'],    baromabsin: ['24.549'],    tempf: ['58.8'], battout: ['1'], humidity: ['32'], winddir: ['215'],windspeedmph: ['0.0'],    windgustmph: ['0.0'], maxdailygust: ['3.4'], hourlyrainin: ['0.000'],    eventrainin: ['0.000'],    dailyrainin: ['0.000'],
     weeklyrainin: ['0.000'], monthlyrainin: ['0.000'], totalrainin: ['0.000'],    solarradiation: ['121.36'],
     uv: ['1'],batt_co2: ['1']"""
-    # This changes the reulting key values from lists to single values
+    # This changes the resulting key values from lists to single values
     for key in result:
         if len(result[key]) == 1:
             result[key] = result[key][0]
@@ -53,14 +68,32 @@ def handle_results(result):
 def application(environ, start_response):
     # the FQDN (i.e. /data?stationtype=AMBWeatherV4.2.9&&tempinf=71.1&humidityin=35)
     # adapted the code to reflect comment from original blog post.
+    _LOGGER.debug("Environ is: %s", environ)
+    headers = get_headers(environ)
+    _LOGGER.debug("Headers: \n\n%s", headers)
     result = parse_qs(environ["QUERY_STRING"])
+    _LOGGER.debug("Data: %s", result)
+    ws5000_header = [(header, value) for header, value in headers.items() if header.startswith('&STATIONTYPE')]
+    _LOGGER.debug("WS-5000 Header: %s", ws5000_header)
+    if len(ws5000_header) == 1:
+        ws5000_result = {key.lower():value for key, value in parse_qs(':'.join(ws5000_header[0]).lstrip('&').split(' ')[0]).items()}
+        _LOGGER.debug("WS-5000 Extra Data: %s", ws5000_result)
+        result = result | ws5000_result
+    _LOGGER.debug("Full Data: %s", result)
     # send to our other function to deal with the results.
     # result is a dict
-    handle_results(result)
-    # we need to return a response. HTTP code 200 means everything is OK. other HTTP codes include 404 not found and such.
-    start_response("200 OK", [("Content-Type", "text/plain")])
-    # the response doesn't actually need to contain anything
-    response_body = ""
+    if len(result) == 0:
+        start_response("400 Bad Request", [("Content-Type", "text/plain")])
+        response_body = "Missing query string"
+        _LOGGER.debug("Bad Request: %s", response_body)
+        _LOGGER.error("Query string could not be detected in the request. Is the query string character '?' in the path?")
+    else:
+        handle_results(result)
+        # we need to return a response. HTTP code 200 means everything is OK. other HTTP codes include 404 not found and such.
+        start_response("200 OK", [("Content-Type", "text/plain")])
+        # the response doesn't actually need to contain anything
+        response_body = ""
+        _LOGGER.debug("Valid Request")
     # return the encoded bytes of the response_body.
     # for python 2 (don't use python 2), the results don't need to be encoded
     return [response_body.encode()]
@@ -68,10 +101,14 @@ def application(environ, start_response):
 
 # this little guy runs a web server if this python file is called directly. if it isn't called directly, it won't run.
 # Apache/Python WSGI will run the function 'application()' directly
-# in theory, you don't need apache or any webserver. just run it right out of python. would need
+# in theory, you don't need apache or any web server. just run it right out of python. would need
 # to improve error handling to ensure it run without interruption.
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
+
+    logging.basicConfig(stream = sys.stdout,
+                    format = '%(asctime)s %(levelname)8s : %(message)s',
+                    level = sys.argv[1])
 
     # probably shouldn't run on port 80 but that's what I specified in the ambient weather console
     httpd = make_server("", 80, application)
