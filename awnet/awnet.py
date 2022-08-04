@@ -56,7 +56,7 @@ def handle_results(result):
     stationtype: ['AMBWeatherV4.2.9'], PASSKEY: ['<station_mac_address>'], dateutc: ['2021-03-20 17:12:27'], tempinf: ['71.1'], humidityin: ['36'], baromrelin: ['29.693'],    baromabsin: ['24.549'],    tempf: ['58.8'], battout: ['1'], humidity: ['32'], winddir: ['215'],windspeedmph: ['0.0'],    windgustmph: ['0.0'], maxdailygust: ['3.4'], hourlyrainin: ['0.000'],    eventrainin: ['0.000'],    dailyrainin: ['0.000'],
     weeklyrainin: ['0.000'], monthlyrainin: ['0.000'], totalrainin: ['0.000'],    solarradiation: ['121.36'],
     uv: ['1'],batt_co2: ['1']"""
-    # This changes the reulting key values from lists to single values
+    # This changes the resulting key values from lists to single values
     for key in result:
         if len(result[key]) == 1:
             result[key] = result[key][0]
@@ -86,7 +86,7 @@ def application(environ, start_response):
         start_response("400 Bad Request", [("Content-Type", "text/plain")])
         response_body = "Missing query string"
         _LOGGER.debug("Bad Request: %s", response_body)
-        _LOGGER.error("Query string could not be detected in the request. Is the uqerystring character '?' in the path?")
+        _LOGGER.error("Query string could not be detected in the request. Is the query string character '?' in the path?")
     else:
         handle_results(result)
         # we need to return a response. HTTP code 200 means everything is OK. other HTTP codes include 404 not found and such.
@@ -101,7 +101,7 @@ def application(environ, start_response):
 
 # this little guy runs a web server if this python file is called directly. if it isn't called directly, it won't run.
 # Apache/Python WSGI will run the function 'application()' directly
-# in theory, you don't need apache or any webserver. just run it right out of python. would need
+# in theory, you don't need apache or any web server. just run it right out of python. would need
 # to improve error handling to ensure it run without interruption.
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server

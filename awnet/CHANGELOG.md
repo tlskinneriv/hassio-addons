@@ -6,12 +6,12 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - More debug logs
-- Helpful error message if querystring is missing
+- Helpful error message if query string is missing
 - Log level option to the configuration, default is WARNING
 
 ### Fixed
 
-- Updated handling of the request to return 400 on requests with no querystring
+- Updated handling of the request to return 400 on requests with no query string
 - Updated handling of the request to support the malformed HTTP request from WS-5000 devices. Closes #7.
 
 ## [0.1.1] - 2022-05-22
