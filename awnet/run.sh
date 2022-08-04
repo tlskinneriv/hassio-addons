@@ -1,3 +1,4 @@
 #!/usr/bin/with-contenv bashio
 
-python3 awnet.py
+LOG_LEVEL=$(bashio::config 'log_level')
+python3 awnet.py $LOG_LEVEL
