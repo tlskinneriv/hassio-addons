@@ -1,0 +1,21 @@
+name: AWNET to HASS
+version: 1.0.0
+slug: awnet_to_hass
+description: Addon to capture local Ambient Weather data in Home Assistant
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+startup: application
+boot: auto
+homeassistant_api: true
+options:
+  log_level: WARNING
+schema:
+  log_level: list(DEBUG|INFO|WARNING|ERROR)
+ports:
+  80/tcp: 7080
+init: false
+image: "ghcr.io/home-assistant/{arch}-addon-awnet_to_hass"
