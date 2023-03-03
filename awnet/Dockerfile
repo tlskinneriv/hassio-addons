@@ -4,8 +4,7 @@ FROM $BUILD_FROM
 ENV LANG C.UTF-8
 
 # Copy data for add-on
-COPY run.sh /
-COPY awnet.py /
+COPY rootfs /
 RUN chmod a+x /run.sh
 RUN apk add --no-cache python3 py3-pip
 RUN python3 -m pip install requests
