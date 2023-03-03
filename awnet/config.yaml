@@ -16,4 +16,4 @@ schema:
 ports:
   80/tcp: 7080
 init: false
-image: "ghcr.io/home-assistant/{arch}-addon-awnet_to_hass"
+image: "ghcr.io/tlskinneriv/{arch}-addon-awnet_to_hass"
