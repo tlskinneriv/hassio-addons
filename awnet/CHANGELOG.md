@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2023-09-09
+
+### Changed
+
+- Update the way that malformed requests are handled: instead of assuming that the data will be
+  parsed into the headers, look for the broken request string and reassemble it. Limit to 3 lines of
+  lookahead to prevent server blocking if the request is highly malformed.
+- HOUSEKEEPING: Updated base container to python3.11/alpine3.18.
+- HOUSEKEEPING: Updated devcontainer config to be compliant with current VS Code recommendations.
+
 ## [1.0.0] - 2023-03-02
 
 ### Added

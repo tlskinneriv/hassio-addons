@@ -6,8 +6,10 @@
 # original author: Austin of austinsnerdythings.com
 # publish date: 2021-03-20
 
-from urllib.parse import parse_qs, quote
+from urllib.parse import parse_qs
 from wsgiref.headers import Headers
+from wsgiref.simple_server import WSGIRequestHandler
+import re
 import json
 import requests
 import os
@@ -72,13 +74,6 @@ def application(environ, start_response):
     headers = get_headers(environ)
     _LOGGER.debug("Headers: \n\n%s", headers)
     result = parse_qs(environ["QUERY_STRING"])
-    _LOGGER.debug("Data: %s", result)
-    ws5000_header = [(header, value) for header, value in headers.items() if header.startswith('&STATIONTYPE')]
-    _LOGGER.debug("WS-5000 Header: %s", ws5000_header)
-    if len(ws5000_header) == 1:
-        ws5000_result = {key.lower():value for key, value in parse_qs(':'.join(ws5000_header[0]).lstrip('&').split(' ')[0]).items()}
-        _LOGGER.debug("WS-5000 Extra Data: %s", ws5000_result)
-        result = result | ws5000_result
     _LOGGER.debug("Full Data: %s", result)
     # send to our other function to deal with the results.
     # result is a dict
@@ -103,6 +98,44 @@ def application(environ, start_response):
 # Apache/Python WSGI will run the function 'application()' directly
 # in theory, you don't need apache or any web server. just run it right out of python. would need
 # to improve error handling to ensure it run without interruption.
+
+class AWNETWSGIRequestHandler(WSGIRequestHandler):
+    def parse_request(self):
+        """
+        Adds in logic to handle the poorly formed (non-compliant) request strings that some Ambient Weather devices send.
+        """
+        requestline = str(self.raw_requestline, 'iso-8859-1')
+        requestline = requestline.rstrip('\r\n')
+        _LOGGER.debug("original requestline: %s", requestline)
+        extra_lines_read = 0
+        while re.search(pattern=r'\s+HTTP/\d+\.\d+$', string=requestline, flags=re.IGNORECASE) is None:
+            if extra_lines_read == 3:
+                _LOGGER.warning("3 extra lines read to detect querystring, but still not detected properly. Aborting extra line reads.")
+                break
+            raw_extraline = self.rfile.readline(65537)
+            if len(raw_extraline) > 65536:
+                self.requestline = ''
+                self.request_version = ''
+                self.command = ''
+                self.send_error(414)
+                return
+            extraline = str(raw_extraline, 'iso-8859-1')
+            extraline = extraline.rstrip('\r\n')
+            _LOGGER.debug("extraline: %s", extraline)
+            requestline += extraline
+            extra_lines_read += 1
+        if extra_lines_read > 0:
+            new_raw_requestline = requestline.encode('iso-8859-1')
+            if len(new_raw_requestline) > 65536:
+                self.requestline = ''
+                self.request_version = ''
+                self.command = ''
+                self.send_error(414)
+                return
+            self.raw_requestline = new_raw_requestline
+            _LOGGER.debug("new raw_requestline: %s", self.raw_requestline)
+        return super().parse_request()
+
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
 
@@ -111,7 +144,7 @@ if __name__ == "__main__":
                     level = sys.argv[1])
 
     # probably shouldn't run on port 80 but that's what I specified in the ambient weather console
-    httpd = make_server("", 80, application)
+    httpd = make_server("", 80, application, handler_class=AWNETWSGIRequestHandler)
     _LOGGER.info("Serving on http://localhost:80")
 
     httpd.serve_forever()
