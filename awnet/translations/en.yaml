@@ -1,0 +1,10 @@
+---
+configuration:
+  log_level:
+    name: Log Level
+  passkey_override:
+    name: MAC Address Override
+    description: >-
+      If the device is not sending its MAC address in the PASSKEY field of the data, set this option
+      to the desired MAC address to override it. Accepted formats: 000000000000, 00:00:00:00:00:00,
+      00-00-00-00-00-00 or 0000.0000.0000

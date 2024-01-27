@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2024-01-27
+
+### Changed
+
+- Add MAC address override option to add-on. Add the MAC address of the device in the option to
+  override the PASSKEY data.
+
 ## [1.0.1] - 2023-09-09
 
 ### Changed

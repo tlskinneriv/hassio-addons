@@ -19,6 +19,8 @@ import sys
 # set vars
 AUTH_TOKEN = os.getenv("SUPERVISOR_TOKEN", "test")
 
+ATTR_PASSKEY = 'PASSKEY'
+
 _LOGGER = logging.getLogger(__name__)
 
 def get_headers(environ):
@@ -64,6 +66,10 @@ def handle_results(result):
             result[key] = result[key][0]
         else:
             _LOGGER.error('Unexpected list size for key %s', key)
+    m = re.search(pattern=r'(?:[a-f0-9]{2}[\.\-:]?){5}[a-f0-9]{2}', string=os.environ.get('PASSKEY_OVERRIDE', ''), flags=re.IGNORECASE)
+    if m is not None:
+        _LOGGER.debug('%s override: %s', ATTR_PASSKEY, m[0])
+        result[ATTR_PASSKEY] = m[0]
     publish(result)
 
 
