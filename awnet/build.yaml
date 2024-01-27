@@ -1,5 +1,4 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
-
 build_from:
   aarch64: "ghcr.io/home-assistant/aarch64-base-python:3.11-alpine3.18"
   amd64: "ghcr.io/home-assistant/amd64-base-python:3.11-alpine3.18"
