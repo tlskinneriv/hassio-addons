@@ -10,9 +10,10 @@ errors will be reported in the add-on logs since it cannot contact the service f
 
 ### Add-On Options
 
-| Name      | Default | Description                                                                                                                                                |
-| --------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| log_level | WARNING | Logging level for outputting messages to the add-on logs. INFO will show the raw data being sent to the service, DEBUG will show all available log entries |
+| Name                 | Default | Description                                                                                                                                                |
+| -------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Log Level            | WARNING | Logging level for outputting messages to the add-on logs. INFO will show the raw data being sent to the service, DEBUG will show all available log entries |
+| MAC Address Override | n/a     | Override the MAC address/PASSKEY of the messages sent by the device.                                                                                       |
 
 ## Ambient Weather Configuration
 
