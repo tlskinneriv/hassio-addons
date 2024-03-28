@@ -141,6 +141,9 @@ class AWNETWSGIRequestHandler(WSGIRequestHandler):
             self.raw_requestline = new_raw_requestline
             _LOGGER.debug("new raw_requestline: %s", self.raw_requestline)
         return super().parse_request()
+    # override defalt server logging
+    def log_message(self, format, *args):
+        pass
 
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
