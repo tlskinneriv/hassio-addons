@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2024-03-30
+
+### Changed
+
+- Update logging format to include file name and line number for easier troubleshooting; update format for readability.
+- Update logger for WSGI to use the built-in Python logger (and not log out to stderr, thanks @jruby411!).
+
 ## [1.1.0] - 2024-01-27
 
 ### Changed

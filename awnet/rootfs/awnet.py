@@ -142,11 +142,15 @@ class AWNETWSGIRequestHandler(WSGIRequestHandler):
             _LOGGER.debug("new raw_requestline: %s", self.raw_requestline)
         return super().parse_request()
 
+    # Use the built-in log handler rather than outputting to stderr
+    def log_message(self, format, *args):
+        _LOGGER.info(format, *args)
+
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
 
     logging.basicConfig(stream = sys.stdout,
-                    format = '%(asctime)s %(levelname)8s : %(message)s',
+                    format = '[%(asctime)s] [%(levelname)-8s] %(message)s (%(filename)s:%(lineno)d)',
                     level = sys.argv[1])
 
     # probably shouldn't run on port 80 but that's what I specified in the ambient weather console
