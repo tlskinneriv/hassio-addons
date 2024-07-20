@@ -29,3 +29,38 @@ _These instructions are adapted from the Android app, but should be similar on o
   - Upload Interval: (user determined, how often to send data to Home Assistant)
 - Click "Save" at the bottom of the form
 - Use the "Finish" button in the upper right to complete configuration
+
+## Non-HA OS Options
+
+The following options have been minimally tested, but should work properly. By default, the container/script
+will listen on all IP addresses on port 7080.
+
+### Container Setup without HA OS (e.g. HA Docker)
+
+Obtain the container from the GitHub registry for your platform:
+
+- armhf: ghcr.io/tlskinneriv/armhf-addon-awnet_to_hass
+- armv7: ghcr.io/tlskinneriv/armv7-addon-awnet_to_hass
+- aarch64: ghcr.io/tlskinneriv/aarch64-addon-awnet_to_hass
+- amd64: ghcr.io/tlskinneriv/amd64-addon-awnet_to_hass
+- i386: ghcr.io/tlskinneriv/i386-addon-awnet_to_hass
+
+Run the container with at least the following environment variables set:
+
+- HA_API_BASE_URL: The base URL to your HA instance's API; e.g. http://homeassistant.local:8123/api/
+- HA_API_AUTH_TOKEN: A long-lived access token for HA. Create one under user profile -> security.
+
+See the header comments in the [awnet.py][awnet.py] script for additional details and settings.
+
+### Script Setup for use with HA Core
+
+Obtain the [awnet.py][awnet.py] script.
+
+Run the script with at least the following environment variables set:
+
+- HA_API_BASE_URL: The base URL to your HA instance's API; e.g. http://homeassistant.local:8123/api/
+- HA_API_AUTH_TOKEN: A long-lived access token for HA. Create one under user profile -> security.
+
+See the header comments in the [awnet.py][awnet.py] script for additional details and settings.
+
+[awnet.py]: https://github.com/tlskinneriv/hassio-addons/blob/master/awnet/rootfs/awnet.py

@@ -14,6 +14,19 @@
         "panel": "new"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Monitor AWNET Logs",
+      "type": "shell",
+      "command": "while true; do docker logs -f addon_local_awnet_to_hass; sleep 1; done",
+      "group": {
+        "kind": "test",
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
     }
   ]
 }
