@@ -1,5 +1,5 @@
 name: AWNET to HASS
-version: 1.1.1
+version: 1.1.2
 slug: awnet_to_hass
 description: Addon to capture local Ambient Weather data in Home Assistant
 arch:
@@ -13,8 +13,8 @@ options:
   log_level: WARNING
 schema:
   log_level: list(DEBUG|INFO|WARNING|ERROR)
-  passkey_override: "match(^(?:[a-f0-9]{2}[\\.\\-:]?){5}[a-f0-9]{2}$)?"
+  passkey_override: "match(^(?:[a-fA-F0-9]{2}[\\.\\-:]?){5}[a-fA-F0-9]{2}$)?"
 ports:
-  80/tcp: 7080
+  7080/tcp: 7080
 init: false
-image: "ghcr.io/tlskinneriv/{arch}-addon-awnet_to_hass"
+# image: "ghcr.io/tlskinneriv/{arch}-addon-awnet_to_hass"

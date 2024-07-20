@@ -6,7 +6,22 @@
 # original author: Austin of austinsnerdythings.com
 # publish date: 2021-03-20
 
-from urllib.parse import parse_qs
+# In the event this script is to be used outside of this container configuration, the following
+# environment variables must be set for proper operation:
+#
+# HA_API_BASE_URL: The base URL to your HA instance's API; e.g. http://homeassistant.local:8123/api/
+# HA_API_AUTH_TOKEN: A long-lived access token for HA. Create one under user profile -> security.
+#
+# Optional variables:
+#
+# HTTP_LISTEN_HOST: Default: "" (all IP addresses); the host that this script will listen on for updates from the AWNET device
+# HTTP_LISTEN_PORT: Default: 7080; The port that this script should listen on for updates from the AWNET device
+# HA_API_VALIDATE_CERTIFICATE: Default: True; if set to True, verifies the SSL certificate on HTTPS requests
+# LOG_LEVEL: Default: WARNING; log level setting; one of: DEBUG, INFO, WARNING, ERROR, CRITICAL
+# PASSKEY_OVERRIDE: Default: ""; In the event that the PASSKEY value for the device is not a MAC address, use this field to
+# statically set it to your devices MAC address.
+
+from urllib.parse import parse_qs, urljoin
 from wsgiref.headers import Headers
 from wsgiref.simple_server import WSGIRequestHandler
 import re
@@ -16,12 +31,18 @@ import os
 import logging
 import sys
 
-# set vars
-AUTH_TOKEN = os.getenv("SUPERVISOR_TOKEN", "test")
-
 ATTR_PASSKEY = 'PASSKEY'
 
 _LOGGER = logging.getLogger(__name__)
+
+# set vars
+PASSKEY_OVERRIDE = os.environ.get("PASSKEY_OVERRIDE", "")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "WARNING")
+HTTP_LISTEN_HOST = os.getenv("HTTP_LISTEN_HOST", "")
+HTTP_LISTEN_PORT = int(os.getenv("HTTP_LISTEN_PORT", "7080"))
+HA_API_AUTH_TOKEN = os.getenv("HA_API_AUTH_TOKEN", "test")
+HA_API_BASE_URL = os.getenv("HA_API_BASE_URL", "http://supervisor/core/api/")
+HA_API_VALIDATE_CERTIFICATE = os.getenv("HA_API_VALIDATE_CERTIFICATE", "True").lower() == 'true'
 
 def get_headers(environ):
     """
@@ -40,14 +61,14 @@ def publish(payload):
     payload_json = json.dumps(payload)
 
     head = {
-        "Authorization": "Bearer " + AUTH_TOKEN,
+        "Authorization": "Bearer " + HA_API_AUTH_TOKEN,
         "content-type": "application/json",
     }
     good_responses = [200, 201]
 
-    url = "http://supervisor/core/api/services/awnet_local/update"
+    url = urljoin(HA_API_BASE_URL, "services/awnet_local/update")
 
-    response = requests.post(url, data=payload_json, headers=head)
+    response = requests.post(url, data=payload_json, headers=head, verify=HA_API_VALIDATE_CERTIFICATE)
 
     if response.status_code in good_responses:
         _LOGGER.info(f"Sent {payload_json}")
@@ -66,7 +87,7 @@ def handle_results(result):
             result[key] = result[key][0]
         else:
             _LOGGER.error('Unexpected list size for key %s', key)
-    m = re.search(pattern=r'(?:[a-f0-9]{2}[\.\-:]?){5}[a-f0-9]{2}', string=os.environ.get('PASSKEY_OVERRIDE', ''), flags=re.IGNORECASE)
+    m = re.search(pattern=r'(?:[a-f0-9]{2}[\.\-:]?){5}[a-f0-9]{2}', string=PASSKEY_OVERRIDE, flags=re.IGNORECASE)
     if m is not None:
         _LOGGER.debug('%s override: %s', ATTR_PASSKEY, m[0])
         result[ATTR_PASSKEY] = m[0]
@@ -151,10 +172,18 @@ if __name__ == "__main__":
 
     logging.basicConfig(stream = sys.stdout,
                     format = '[%(asctime)s] [%(levelname)-8s] %(message)s (%(filename)s:%(lineno)d)',
-                    level = sys.argv[1])
+                    level = LOG_LEVEL)
+
+    # log variable values for DEBUG
+    _LOGGER.debug("LOG_LEVEL: %s", LOG_LEVEL)
+    _LOGGER.debug("HTTP_LISTEN_HOST: %s", HTTP_LISTEN_HOST)
+    _LOGGER.debug("HTTP_LISTEN_PORT: %s", HTTP_LISTEN_PORT)
+    _LOGGER.debug("HA_API_AUTH_TOKEN: %s", HA_API_AUTH_TOKEN)
+    _LOGGER.debug("HA_API_BASE_URL: %s", HA_API_BASE_URL)
+    _LOGGER.debug("HA_API_VALIDATE_CERTIFICATE: %s", HA_API_VALIDATE_CERTIFICATE)
 
     # probably shouldn't run on port 80 but that's what I specified in the ambient weather console
-    httpd = make_server("", 80, application, handler_class=AWNETWSGIRequestHandler)
-    _LOGGER.info("Serving on http://localhost:80")
+    httpd = make_server(HTTP_LISTEN_HOST, HTTP_LISTEN_PORT, application, handler_class=AWNETWSGIRequestHandler)
+    _LOGGER.info(f"Serving on http://{HTTP_LISTEN_HOST}:{HTTP_LISTEN_PORT}")
 
     httpd.serve_forever()

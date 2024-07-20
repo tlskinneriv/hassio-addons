@@ -19,3 +19,7 @@ This add-on and integration combo are a work in progress. Any feedback and/or co
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
+
+## Usage Without Home Assistant OS
+
+See the [documentation](https://github.com/tlskinneriv/hassio-addons/blob/master/awnet/DOCS.md#non-ha-os-options) about usage of the container and script within in the event you are running HA in Docker or HA Core.

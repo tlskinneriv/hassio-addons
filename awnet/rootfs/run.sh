@@ -1,6 +1,7 @@
 #!/usr/bin/with-contenv bashio
 
-export PASSKEY_OVERRIDE=$(bashio::config 'passkey_override')
+export PASSKEY_OVERRIDE=${PASSKEY_OVEFRRRIDE:-$(bashio::config 'passkey_override')}
+export LOG_LEVEL=${LOG_LEVEL:-$(bashio::config 'log_level')}
+export HA_API_AUTH_TOKEN=${HA_API_AUTH_TOKEN:-$SUPERVISOR_TOKEN}
 
-LOG_LEVEL=$(bashio::config 'log_level')
-python3 awnet.py $LOG_LEVEL
+python3 awnet.py

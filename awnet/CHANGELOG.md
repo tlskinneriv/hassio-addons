@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2024-07-20
+
+### Changed
+
+- HOUSEKEEPING: Updated base container to python3.12/alpine3.20.
+
+### Fixed
+
+- Update script to enable usage outside of HA OS. Closes [#15](https://github.com/tlskinneriv/hassio-addons/issues/15).
+- Allow capital characters in MAC address override.
+
 ## [1.1.1] - 2024-03-30
 
 ### Changed
