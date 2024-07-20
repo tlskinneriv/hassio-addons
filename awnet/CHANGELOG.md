@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.1.2] - 2024-07-20
 
+### Added
+
+- Meaningful log messages for when HA is unavailable or the Ambient Weather Station - Local integration is not set up.
+
 ### Changed
 
 - HOUSEKEEPING: Updated base container to python3.12/alpine3.20.

@@ -73,7 +73,14 @@ def publish(payload):
     if response.status_code in good_responses:
         _LOGGER.info(f"Sent {payload_json}")
     else:
-        _LOGGER.error(f"Failed to send {payload_json} to {url} with headers {head}; {response.content}")
+        _LOGGER.error(f"Failed to send data to Home Assistant. HTTP error code: {response.status_code}.")
+        _LOGGER.info(f"Failed payload: {payload_json} to {url} with headers {head}; {response.content}")
+        if response.status_code == 400:
+            _LOGGER.warning("'Ambient Weather Station - Local' may not be set up. Please install it from HACS and set it up with your device's MAC address.")
+        elif response.status_code == 502:
+            _LOGGER.warning("Home Assistant may not be available to receive requests.")
+        else:
+            _LOGGER.warning("An unknown error occurred.")
 
 
 def handle_results(result):
