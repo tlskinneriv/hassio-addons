@@ -9,8 +9,6 @@ arch:
   - amd64
   - i386
 homeassistant_api: true
-services:
-  - "awnet_local.update:need"
 options:
   log_level: WARNING
 schema:
