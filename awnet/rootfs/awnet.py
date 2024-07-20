@@ -175,12 +175,12 @@ if __name__ == "__main__":
                     level = LOG_LEVEL)
 
     # log variable values for DEBUG
-    _LOGGER.debug("LOG_LEVEL: %s", LOG_LEVEL)
-    _LOGGER.debug("HTTP_LISTEN_HOST: %s", HTTP_LISTEN_HOST)
-    _LOGGER.debug("HTTP_LISTEN_PORT: %s", HTTP_LISTEN_PORT)
-    _LOGGER.debug("HA_API_AUTH_TOKEN: %s", HA_API_AUTH_TOKEN)
-    _LOGGER.debug("HA_API_BASE_URL: %s", HA_API_BASE_URL)
-    _LOGGER.debug("HA_API_VALIDATE_CERTIFICATE: %s", HA_API_VALIDATE_CERTIFICATE)
+    _LOGGER.info("LOG_LEVEL: %s", LOG_LEVEL)
+    _LOGGER.info("HTTP_LISTEN_HOST: %s", HTTP_LISTEN_HOST)
+    _LOGGER.info("HTTP_LISTEN_PORT: %s", HTTP_LISTEN_PORT)
+    _LOGGER.info("HA_API_AUTH_TOKEN: %s", HA_API_AUTH_TOKEN)
+    _LOGGER.info("HA_API_BASE_URL: %s", HA_API_BASE_URL)
+    _LOGGER.info("HA_API_VALIDATE_CERTIFICATE: %s", HA_API_VALIDATE_CERTIFICATE)
 
     # probably shouldn't run on port 80 but that's what I specified in the ambient weather console
     httpd = make_server(HTTP_LISTEN_HOST, HTTP_LISTEN_PORT, application, handler_class=AWNETWSGIRequestHandler)
