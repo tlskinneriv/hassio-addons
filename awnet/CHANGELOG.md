@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3] - 2025-01-09
+
+### Fixed
+
+- Fixed typo in run script for PASSKEY_OVERRIDE. Closes [#19](https://github.com/tlskinneriv/hassio-addons/issues/19).
+- HOUSEKEEPING: Updated base container to python:3.13-alpine3.21.
+
 ## [1.1.2] - 2024-07-20
 
 ### Added
