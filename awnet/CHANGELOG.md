@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.4] - 2026-11-17
+
+### Fixed
+
+- Receiver could stop processing updates permanently while still showing as running, until the add-on was restarted. A single request to Home Assistant that never completed, or a device connection left open without sending, blocked the single-threaded server forever. Requests to Home Assistant now time out (`HA_API_TIMEOUT`, default 10 s), idle device connections time out (`HTTP_REQUEST_TIMEOUT`, default 30 s), and each device request is handled in its own thread. Addresses [#18](https://github.com/tlskinneriv/hassio-addons/issues/18).
+
 ## [1.1.3] - 2025-01-09
 
 ### Fixed
