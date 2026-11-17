@@ -18,12 +18,15 @@
 # HTTP_LISTEN_PORT: Default: 7080; The port that this script should listen on for updates from the AWNET device
 # HA_API_VALIDATE_CERTIFICATE: Default: True; if set to True, verifies the SSL certificate on HTTPS requests
 # LOG_LEVEL: Default: WARNING; log level setting; one of: DEBUG, INFO, WARNING, ERROR, CRITICAL
+# HA_API_TIMEOUT: Default: 10; seconds to wait for Home Assistant to accept an update before giving up on it
+# HTTP_REQUEST_TIMEOUT: Default: 30; seconds to wait on a connection from the AWNET device before dropping it
 # PASSKEY_OVERRIDE: Default: ""; In the event that the PASSKEY value for the device is not a MAC address, use this field to
 # statically set it to your devices MAC address.
 
 from urllib.parse import parse_qs, urljoin
 from wsgiref.headers import Headers
-from wsgiref.simple_server import WSGIRequestHandler
+from wsgiref.simple_server import WSGIServer, WSGIRequestHandler
+from socketserver import ThreadingMixIn
 import re
 import json
 import requests
@@ -43,6 +46,8 @@ HTTP_LISTEN_PORT = int(os.getenv("HTTP_LISTEN_PORT", "7080"))
 HA_API_AUTH_TOKEN = os.getenv("HA_API_AUTH_TOKEN", "test")
 HA_API_BASE_URL = os.getenv("HA_API_BASE_URL", "http://supervisor/core/api/")
 HA_API_VALIDATE_CERTIFICATE = os.getenv("HA_API_VALIDATE_CERTIFICATE", "True").lower() == 'true'
+HA_API_TIMEOUT = float(os.getenv("HA_API_TIMEOUT", "10"))
+HTTP_REQUEST_TIMEOUT = float(os.getenv("HTTP_REQUEST_TIMEOUT", "30"))
 
 def get_headers(environ):
     """
@@ -68,7 +73,15 @@ def publish(payload):
 
     url = urljoin(HA_API_BASE_URL, "services/awnet_local/update")
 
-    response = requests.post(url, data=payload_json, headers=head, verify=HA_API_VALIDATE_CERTIFICATE)
+    # Without a timeout, a single stalled request to Home Assistant blocks this process forever and
+    # every later update from the device is lost until the add-on is restarted.
+    try:
+        response = requests.post(url, data=payload_json, headers=head, verify=HA_API_VALIDATE_CERTIFICATE,
+                                 timeout=HA_API_TIMEOUT)
+    except requests.exceptions.RequestException as err:
+        _LOGGER.error("Failed to send data to Home Assistant: %s", err)
+        _LOGGER.warning("Home Assistant may not be available to receive requests. This update was dropped.")
+        return
 
     if response.status_code in good_responses:
         _LOGGER.info(f"Sent {payload_json}")
@@ -134,6 +147,15 @@ def application(environ, start_response):
 # to improve error handling to ensure it run without interruption.
 
 class AWNETWSGIRequestHandler(WSGIRequestHandler):
+    # Applied to each connection socket; stops a half-open or stalled connection from holding a worker forever.
+    timeout = HTTP_REQUEST_TIMEOUT
+
+    def handle(self):
+        try:
+            super().handle()
+        except TimeoutError:
+            _LOGGER.warning("Timed out waiting for the device to finish its request from %s", self.client_address[0])
+
     def parse_request(self):
         """
         Adds in logic to handle the poorly formed (non-compliant) request strings that some Ambient Weather devices send.
@@ -174,6 +196,11 @@ class AWNETWSGIRequestHandler(WSGIRequestHandler):
     def log_message(self, format, *args):
         _LOGGER.info(format, *args)
 
+
+class ThreadingWSGIServer(ThreadingMixIn, WSGIServer):
+    """Handles each device request in its own thread so one slow request cannot block the others."""
+    daemon_threads = True
+
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
 
@@ -188,9 +215,12 @@ if __name__ == "__main__":
     _LOGGER.info("HA_API_AUTH_TOKEN: %s", HA_API_AUTH_TOKEN)
     _LOGGER.info("HA_API_BASE_URL: %s", HA_API_BASE_URL)
     _LOGGER.info("HA_API_VALIDATE_CERTIFICATE: %s", HA_API_VALIDATE_CERTIFICATE)
+    _LOGGER.info("HA_API_TIMEOUT: %s", HA_API_TIMEOUT)
+    _LOGGER.info("HTTP_REQUEST_TIMEOUT: %s", HTTP_REQUEST_TIMEOUT)
 
     # probably shouldn't run on port 80 but that's what I specified in the ambient weather console
-    httpd = make_server(HTTP_LISTEN_HOST, HTTP_LISTEN_PORT, application, handler_class=AWNETWSGIRequestHandler)
+    httpd = make_server(HTTP_LISTEN_HOST, HTTP_LISTEN_PORT, application,
+                        server_class=ThreadingWSGIServer, handler_class=AWNETWSGIRequestHandler)
     _LOGGER.info(f"Serving on http://{HTTP_LISTEN_HOST}:{HTTP_LISTEN_PORT}")
 
     httpd.serve_forever()
